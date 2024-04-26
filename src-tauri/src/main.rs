@@ -31,6 +31,9 @@ fn main() {
                 tauri_ready(&handle);
                 start_background_thread(&handle);
             },
+            tauri::RunEvent::ExitRequested { api, .. } => {
+                info!("Exit requested - intercepting");
+            },
             tauri::RunEvent::WindowEvent { event, .. } => match event {
                 tauri::WindowEvent::Destroyed => {
                     info!("Window destroyed - but will this be called when we crash? Should we re-open the window?");
@@ -58,24 +61,24 @@ fn start_background_thread(app_handle: &AppHandle<Wry>) {
 
     let handle_two = app_handle.clone();
 
-    std::thread::spawn(move || {
-        loop {
-            std::thread::sleep(std::time::Duration::from_secs(5));
-            info!("CLOSING WINDOWS TO SEE WHAT HAPPENS");
-            let window_thing = handle_two.get_window("main").unwrap().url();
-            let windows = handle_two.windows();
-            for(_, window) in windows {
-                // kill the window
-                window.close().unwrap();
-            }
+    // std::thread::spawn(move || {
+    //     loop {
+    //         std::thread::sleep(std::time::Duration::from_secs(5));
+    //         info!("CLOSING WINDOWS TO SEE WHAT HAPPENS");
+    //         let window_thing = handle_two.get_window("main").unwrap().url();
+    //         let windows = handle_two.windows();
+    //         for(_, window) in windows {
+    //             // kill the window
+    //             window.close().unwrap();
+    //         }
 
-            info!("GOING TO CALL WINDOW URL NOW TO SEE WHAT HAPPENS");
-            let window_ref = handle_two.get_window("main").unwrap();
-            info!("GOT WINDOW REFERENCE - CHECKING URL");
-            info!("URL: {:?}", window_ref.url());
-            std::thread::sleep(std::time::Duration::from_secs(1));
-        }
-    });
+    //         info!("GOING TO CALL WINDOW URL NOW TO SEE WHAT HAPPENS");
+    //         let window_ref = handle_two.get_window("main").unwrap();
+    //         info!("GOT WINDOW REFERENCE - CHECKING URL");
+    //         info!("URL: {:?}", window_ref.url());
+    //         std::thread::sleep(std::time::Duration::from_secs(1));
+    //     }
+    // });
 }
 
 fn intercept_close_request(app_handle: &AppHandle<Wry>, api: &CloseRequestApi) {
